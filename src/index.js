@@ -10,7 +10,7 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import { createStore, combineReducers } from "redux";
-import { Provider } from "react-redux";
+import { Provider, connect } from "react-redux";
 import devToolsEnhancer from "remote-redux-devtools";
 
 // todo reducer
@@ -53,25 +53,25 @@ const todos = (state = [], action) => {
 // todo action creators
 let nextTodoId = 0;
 const addTodo = text => {
-  store.dispatch({
+  return {
     type: "ADD_TODO",
     id: nextTodoId++,
     text
-  });
+  };
 };
 
 const toggleTodo = id => {
-  store.dispatch({
+  return {
     type: "TOGGLE_TODO",
     id
-  });
+  };
 };
 
 const removeTodo = id => {
-  store.dispatch({
+  return {
     type: "REMOVE_TODO",
     id
-  });
+  };
 };
 
 // filter reducer
@@ -86,33 +86,11 @@ const visibilityFilter = (state = "SHOW_ALL", action) => {
 
 // filter action creators
 const setVisibilityFilter = filter => {
-  store.dispatch({
+  return {
     type: "SET_VISIBILITY_FILTER",
     filter
-  });
+  };
 };
-
-class VisibleTodoList extends Component {
-  componentDidMount() {
-    this.unsubscribe = store.subscribe(() => this.forceUpdate());
-  }
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
-  render() {
-    const state = store.getState();
-
-    return (
-      <TodoList
-        todos={getVisibleTodos(state.todos, state.visibilityFilter)}
-        onTodoClick={id => toggleTodo(id)}
-        onRemoveTodoClick={id => removeTodo(id)}
-      >
-        123
-      </TodoList>
-    );
-  }
-}
 
 const todoApp = combineReducers({
   todos,
@@ -131,27 +109,42 @@ const Button = ({ active, children, onClick }) => (
   </button>
 );
 
-class FilterButton extends Component {
-  componentDidMount() {
-    this.unsubscribe = store.subscribe(() => this.forceUpdate());
-  }
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
-  render() {
-    const props = this.props;
-    const state = store.getState();
+const mapStateToButtonProps = (state, ownProps) => {
+  return {
+    active: ownProps.filter === state.visibilityFilter
+  };
+};
 
-    return (
-      <Button
-        active={props.filter === state.visibilityFilter}
-        onClick={() => setVisibilityFilter(props.filter)}
-      >
-        {props.children}
-      </Button>
-    );
-  }
-}
+const mapDispatchToButtonProps = (dispatch, ownProps) => {
+  return {
+    onClick: () => dispatch(setVisibilityFilter(ownProps.filter))
+  };
+};
+
+const FilterButton = connect(mapStateToButtonProps, mapDispatchToButtonProps)(
+  Button
+);
+// class FilterButton extends Component {
+//   componentDidMount() {
+//     this.unsubscribe = store.subscribe(() => this.forceUpdate());
+//   }
+//   componentWillUnmount() {
+//     this.unsubscribe();
+//   }
+//   render() {
+//     const props = this.props;
+//     const state = store.getState();
+
+//     return (
+//       <Button
+//         active={ownProps.filter === state.visibilityFilter}
+//         onClick={onClick: () => setVisibilityFilter(ownProps.filter)}
+//       >
+//         {props.children}
+//       </Button>
+//     );
+//   }
+// }
 
 const Footer = () => (
   <div>
@@ -188,7 +181,44 @@ const TodoList = ({ todos, onTodoClick, onRemoveTodoClick }) => (
   </ul>
 );
 
-const AddTodo = () => {
+const mapStateToTodoListProps = state => {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  };
+};
+const mapDispatchToTodoListProps = dispatch => {
+  return {
+    onTodoClick: id => dispatch(toggleTodo(id)),
+    onRemoveTodoClick: id => dispatch(removeTodo(id))
+  };
+};
+const VisibleTodoList = connect(
+  mapStateToTodoListProps,
+  mapDispatchToTodoListProps
+)(TodoList);
+// class VisibleTodoList extends Component {
+//   componentDidMount() {
+//     this.unsubscribe = store.subscribe(() => this.forceUpdate());
+//   }
+//   componentWillUnmount() {
+//     this.unsubscribe();
+//   }
+//   render() {
+//     const state = store.getState();
+
+//     return (
+//       <TodoList
+//         todos={getVisibleTodos(state.todos, state.visibilityFilter)}
+//         onTodoClick={id => toggleTodo(id)}
+//         onRemoveTodoClick={id => removeTodo(id)}
+//       >
+//         123
+//       </TodoList>
+//     );
+//   }
+// }
+
+let AddTodo = ({ dispatch }) => {
   let input;
 
   return (
@@ -200,7 +230,7 @@ const AddTodo = () => {
       />
       <button
         onClick={() => {
-          addTodo(input.value);
+          dispatch(addTodo(input.value));
           input.value = "";
         }}
       >
@@ -209,6 +239,7 @@ const AddTodo = () => {
     </div>
   );
 };
+AddTodo = connect()(AddTodo);
 
 const getVisibleTodos = (todos, filter) => {
   switch (filter) {
@@ -230,10 +261,14 @@ const TodoApp = () => (
   </div>
 );
 
-const store = createStore(todoApp, devToolsEnhancer());
-addTodo("Learn Redux");
-addTodo("Learn Jest");
-addTodo("Learn How To Continious Integration");
-addTodo("Learn GraphQL");
+ReactDOM.render(
+  <Provider store={createStore(todoApp, devToolsEnhancer())}>
+    <TodoApp />
+  </Provider>,
+  document.getElementById("root")
+);
 
-ReactDOM.render(<TodoApp />, document.getElementById("root"));
+// addTodo("Learn Redux");
+// addTodo("Learn Jest");
+// addTodo("Learn How To Continious Integration");
+// addTodo("Learn GraphQL");
