@@ -1,48 +1,49 @@
-import React from "react";
+import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
-import { toggleTodo, removeTodo } from "../actions";
+import * as actions from "../actions";
 import { getVisibleTodos } from "../reducers";
+import TodoList from "./TodoList";
 import queryString from "query-string";
 
-const Todo = ({ onClick, onRemoveClick, completed, text }) => (
-  <li>
-    <span
-      onClick={onClick}
-      style={{
-        textDecoration: completed ? "line-through" : "none"
-      }}
-    >
-      {text}
-    </span>{" "}
-    <button onClick={onRemoveClick}>&times;</button>
-  </li>
-);
+class VisibleTodoList extends Component {
+  componentDidMount() {
+    this.fetchData();
+  }
 
-const TodoList = ({ todos, onTodoClick, onRemoveTodoClick }) => (
-  <ul>
-    {todos.map(todo => (
-      <Todo
-        key={todo.id}
-        {...todo} // text, completed
-        onClick={() => onTodoClick(todo.id)}
-        onRemoveClick={() => onRemoveTodoClick(todo.id)}
+  componentDidUpdate(prevProps) {
+    if (this.props.filter !== prevProps.filter) {
+      this.fetchData();
+    }
+  }
+
+  fetchData() {
+    const { filter, fetchTodos } = this.props;
+    fetchTodos(filter);
+  }
+
+  render() {
+    const { toggleTodo, removeTodo, ...rest } = this.props;
+    return (
+      <TodoList
+        {...rest}
+        onTodoClick={toggleTodo}
+        onRemoveTodoClick={removeTodo}
       />
-    ))}
-  </ul>
-);
+    );
+  }
+}
 
 const mapStateToTodoListProps = (state, { location }) => {
-  const filter = queryString.parse(location.search).filter;
+  const filter = queryString.parse(location.search).filter || "all";
   return {
-    todos: getVisibleTodos(state, filter || "all")
+    todos: getVisibleTodos(state, filter),
+    filter
   };
 };
-const VisibleTodoList = withRouter(
-  connect(mapStateToTodoListProps, {
-    onTodoClick: toggleTodo,
-    onRemoveTodoClick: removeTodo
-  })(TodoList)
+
+VisibleTodoList = withRouter(
+  connect(mapStateToTodoListProps, actions)(VisibleTodoList)
 );
 
 export default VisibleTodoList;
