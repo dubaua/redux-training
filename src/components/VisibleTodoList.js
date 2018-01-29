@@ -1,56 +1,40 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
-import { toggleTodo, removeTodo } from "../actions";
+import * as action from "../actions";
 import { getVisibleTodos } from "../reducers";
 import queryString from "query-string";
 import { fetchTodos } from "../api";
+import TodoList from "./TodoList";
 
 class VisibleTodoList extends Component {
   componentDidMount() {
-    fetchTodos(this.props.filter).then(todos =>
-      console.log(this.props.filter, todos)
-    );
+    this.fetchData();
   }
+
   componentDidUpdate(prevProps) {
+    // check if user navigated
     if (this.props.filter !== prevProps.filter) {
-      fetchTodos(this.props.filter).then(todos =>
-        console.log(this.props.filter, todos)
-      );
+      this.fetchData();
     }
   }
+
+  fetchData() {
+    const { filter, receiveTodos } = this.props;
+    fetchTodos(filter).then(todos => receiveTodos(filter, todos));
+  }
+
   render() {
-    return <TodoList {...this.props} />;
+    const { toggleTodo, removeTodo, ...rest } = this.props;
+    return (
+      <TodoList
+        {...rest}
+        onTodoClick={toggleTodo}
+        onRemoveTodoClick={removeTodo}
+      />
+    );
   }
 }
-
-// fetchTodos("all").then(todos => console.log(todos));
-const Todo = ({ onClick, onRemoveClick, completed, text }) => (
-  <li>
-    <span
-      onClick={onClick}
-      style={{
-        textDecoration: completed ? "line-through" : "none"
-      }}
-    >
-      {text}
-    </span>{" "}
-    <button onClick={onRemoveClick}>&times;</button>
-  </li>
-);
-
-const TodoList = ({ todos, onTodoClick, onRemoveTodoClick }) => (
-  <ul>
-    {todos.map(todo => (
-      <Todo
-        key={todo.id}
-        {...todo} // text, completed
-        onClick={() => onTodoClick(todo.id)}
-        onRemoveClick={() => onRemoveTodoClick(todo.id)}
-      />
-    ))}
-  </ul>
-);
 
 const mapStateToTodoListProps = (state, { location }) => {
   const filter = queryString.parse(location.search).filter || "all";
@@ -61,10 +45,7 @@ const mapStateToTodoListProps = (state, { location }) => {
 };
 
 VisibleTodoList = withRouter(
-  connect(mapStateToTodoListProps, {
-    onTodoClick: toggleTodo,
-    onRemoveTodoClick: removeTodo
-  })(VisibleTodoList)
+  connect(mapStateToTodoListProps, action)(VisibleTodoList)
 );
 
 export default VisibleTodoList;
