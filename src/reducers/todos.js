@@ -2,6 +2,7 @@ import { combineReducers } from "redux";
 import todo from "./todo";
 import omit from "lodash/omit";
 
+// lookup table with todos
 const byId = (state = {}, action) => {
   switch (action.type) {
     case "ADD_TODO":
@@ -17,6 +18,7 @@ const byId = (state = {}, action) => {
   }
 };
 
+// array of ids
 const allIds = (state = [], action) => {
   switch (action.type) {
     case "ADD_TODO":
@@ -36,6 +38,7 @@ const todos = combineReducers({
 
 export default todos;
 
+// array of todos as usual
 const getAllTodos = state => state.allIds.map(id => state.byId[id]);
 
 // named selector, to get data from state
