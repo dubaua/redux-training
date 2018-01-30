@@ -5,8 +5,6 @@ import * as actions from "../actions";
 import { getVisibleTodos } from "../reducers";
 import TodoList from "./TodoList";
 import queryString from "query-string";
-import { fetchTodos } from "../api";
-import TodoList from "./TodoList";
 
 class VisibleTodoList extends Component {
   componentDidMount() {
@@ -21,8 +19,8 @@ class VisibleTodoList extends Component {
   }
 
   fetchData() {
-    const { filter, receiveTodos } = this.props;
-    fetchTodos(filter).then(todos => receiveTodos(filter, todos));
+    const { filter, fetchTodos } = this.props;
+    fetchTodos(filter);
   }
 
   render() {
