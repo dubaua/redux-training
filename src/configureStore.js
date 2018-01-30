@@ -7,42 +7,50 @@ import todoApp from "./reducers";
 import devToolsEnhancer from "remote-redux-devtools";
 import { create } from "domain";
 
-const addLoggingToDispatch = store => {
-  const rawDispatch = store.dispatch;
+const logger = store => next => {
   if (!console.group) {
-    return rawDispatch;
+    return next;
   }
 
   return action => {
     console.group(action.type);
     console.log("%c prev state", "color: gray", store.getState());
     console.log("%c action", "color: yellow", action);
-    const returnValue = rawDispatch(action);
+    const returnValue = next(action);
     console.log("%c next state", "color: green", store.getState());
     console.groupEnd(action.type);
     return returnValue;
   };
 };
 
-const addPromiseSupportToDispatch = store => {
-  const rawDispatch = store.dispatch;
-  return action => {
-    if (typeof action.then === "function") {
-      return action.then(rawDispatch);
-    }
-    return rawDispatch(action);
-  };
+const promise = store => next => action => {
+  if (typeof action.then === "function") {
+    return action.then(next);
+  }
+  return next(action);
+};
+
+const wrapDispatchWithMiddlewares = (store, middlewares) => {
+  middlewares
+    .slice()
+    .reverse()
+    .forEach(middleware => {
+      store.dispatch = middleware(store)(store.dispatch);
+    });
 };
 
 const configureStore = () => {
   // const persistedState = loadState();
   const store = createStore(todoApp, /* persistedState,*/ devToolsEnhancer());
+  const middlewares = [promise];
 
   if (process.env.NODE_ENV !== "production") {
-    store.dispatch = addLoggingToDispatch(store);
+    middlewares.push(logger);
   }
 
-  store.dispatch = addPromiseSupportToDispatch(store);
+  middlewares.push();
+
+  wrapDispatchWithMiddlewares(store, middlewares);
 
   // store.subscribe(
   //   throttle(() => {
@@ -56,15 +64,3 @@ const configureStore = () => {
 };
 
 export default configureStore;
-
-export const fakeAPIStore = () => {
-  const middlewares = [thunk];
-  if (process.env.NODE_ENV !== "production") {
-    middlewares.push(createLogger());
-  }
-  return createStore(
-    todoApp,
-    applyMiddleware(...middlewares),
-    devToolsEnhancer()
-  );
-};
