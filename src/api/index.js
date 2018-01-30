@@ -1,4 +1,4 @@
-const COCKPIT_API_KEY = "d6aa74562570fd7976ea4dee019869";
+console.log(process.env.COCKPIT_API_KEY);
 
 const getFilter = filter => {
   switch (filter) {
@@ -14,7 +14,9 @@ const getFilter = filter => {
 
 export const fetchTodos = filter =>
   fetch(
-    `http://id16900.s24.wh1.su/api/collections/get/todos?token=${COCKPIT_API_KEY}`,
+    `http://id16900.s24.wh1.su/api/collections/get/todos?token=${
+      process.env.COCKPIT_API_KEY
+    }`,
     {
       method: "post",
       headers: { "Content-Type": "application/json" },
@@ -41,18 +43,41 @@ export const addTodo = text => {
     completed: false
   };
 
-  fetch(
-    `http://id16900.s24.wh1.su/api/collections/updateCollection/todos?token=${COCKPIT_API_KEY}`,
+  return fetch(
+    `http://id16900.s24.wh1.su/api/collections/save/todos?token=${
+      process.env.COCKPIT_API_KEY
+    }`,
+    {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: newTodo
+      })
+    }
+  )
+    .then(res => res.json())
+    .then(entry => console.log(entry));
+};
+
+export const toggleTodo = todo => {
+  // here we should get todo by id, not pass whole todo
+  console.log(todo);
+
+  return fetch(
+    `http://id16900.s24.wh1.su/api/collections/save/todos?token=${
+      process.env.COCKPIT_API_KEY
+    }`,
     {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         data: {
-          fields: [newTodo]
+          ...todo,
+          completed: !todo.completed
         }
       })
     }
   )
-    .then(collection => collection.json())
-    .then(collection => console.log(collection));
+    .then(res => res.json())
+    .then(entry => console.log(entry));
 };

@@ -7,7 +7,8 @@ const TodoList = ({ todos, onTodoClick, onRemoveTodoClick }) => (
       <Todo
         key={todo.id}
         {...todo} // text, completed
-        onClick={() => onTodoClick(todo.id)}
+        onClick={() => onTodoClick(todo)}
+        // onClick={() => onTodoClick(todo.id)}
         onRemoveClick={() => onRemoveTodoClick(todo.id)}
       />
     ))}
