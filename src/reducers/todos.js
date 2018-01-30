@@ -1,18 +1,24 @@
 import { combineReducers } from "redux";
-import todo from "./todo";
-import omit from "lodash/omit";
+// import todo from "./todo";
+// import omit from "lodash/omit";
 
 // lookup table with todos
 const byId = (state = {}, action) => {
   switch (action.type) {
-    case "ADD_TODO":
-    case "TOGGLE_TODO":
-      return {
-        ...state,
-        [action.id]: todo(state[action.id], action)
-      };
-    case "REMOVE_TODO":
-      return omit(state, [action.id]);
+    case "RECEIVE_TODOS":
+      const nextState = { ...state };
+      action.response.forEach(todo => {
+        nextState[todo.id] = todo;
+      });
+      return nextState;
+    // case "ADD_TODO":
+    // case "TOGGLE_TODO":
+    //   return {
+    //     ...state,
+    //     [action.id]: todo(state[action.id], action)
+    //   };
+    // case "REMOVE_TODO":
+    //   return omit(state, [action.id]);
     default:
       return state;
   }
@@ -20,20 +26,56 @@ const byId = (state = {}, action) => {
 
 // array of ids
 const allIds = (state = [], action) => {
+  if (action.filter !== "all") {
+    return state;
+  }
   switch (action.type) {
-    case "ADD_TODO":
-      return [...state, action.id];
-    case "REMOVE_TODO":
-      const index = state.indexOf(action.id);
-      return [...state.slice(0, index), ...state.slice(index + 1)];
+    case "RECEIVE_TODOS":
+      return action.response.map(todo => todo.id);
+    // TODO: make ADD_TODO and REMOVE_TODO as api requests
+    // case "ADD_TODO":
+    //   return [...state, action.id];
+    // case "REMOVE_TODO":
+    //   const index = state.indexOf(action.id);
+    //   return [...state.slice(0, index), ...state.slice(index + 1)];
     default:
       return state;
   }
 };
 
+const activeIds = (state = [], action) => {
+  if (action.filter !== "active") {
+    return state;
+  }
+  switch (action.type) {
+    case "RECEIVE_TODOS":
+      return action.response.map(todo => todo.id);
+    default:
+      return state;
+  }
+};
+
+const completedIds = (state = [], action) => {
+  if (action.filter !== "completed") {
+    return state;
+  }
+  switch (action.type) {
+    case "RECEIVE_TODOS":
+      return action.response.map(todo => todo.id);
+    default:
+      return state;
+  }
+};
+
+const idsByFilter = combineReducers({
+  all: allIds,
+  active: activeIds,
+  completed: completedIds
+});
+
 const todos = combineReducers({
   byId,
-  allIds
+  idsByFilter
 });
 
 export default todos;
@@ -44,14 +86,7 @@ const getAllTodos = state => state.allIds.map(id => state.byId[id]);
 // named selector, to get data from state
 // this state corresponds to exported state in this file: todos
 export const getVisibleTodos = (state, filter) => {
-  const allTodos = getAllTodos(state);
-  switch (filter) {
-    case "completed":
-      return allTodos.filter(t => t.completed);
-    case "active":
-      return allTodos.filter(t => !t.completed);
-    case "all":
-    default:
-      return allTodos;
-  }
+  // here [filter] is a dynamic key
+  const ids = state.idsByFilter[filter];
+  return ids.map(id => state.byId[id]);
 };
