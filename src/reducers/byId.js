@@ -1,3 +1,5 @@
+// import omit from "lodash/omit";
+
 // lookup table with todos
 const byId = (state = {}, action) => {
   switch (action.type) {
@@ -7,14 +9,18 @@ const byId = (state = {}, action) => {
         nextState[todo.id] = todo;
       });
       return nextState;
-    // case "ADD_TODO":
     // case "TOGGLE_TODO":
+    // case "ADD_TODO":
+    //   const nextTodo = {
+    //     ...action.response,
+    //     id: action.response._id
+    //   };
     //   return {
     //     ...state,
-    //     [action.id]: todo(state[action.id], action)
+    //     [action.response._id]: nextTodo
     //   };
     // case "REMOVE_TODO":
-    //   return omit(state, [action.id]);
+    //   return omit(state, action.id);
     default:
       return state;
   }

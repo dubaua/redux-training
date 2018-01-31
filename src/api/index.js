@@ -1,4 +1,4 @@
-console.log(process.env.COCKPIT_API_KEY);
+import { COCKPIT_API_KEY } from "./.keys";
 
 const getFilter = filter => {
   switch (filter) {
@@ -14,18 +14,12 @@ const getFilter = filter => {
 
 export const fetchTodos = filter =>
   fetch(
-    `http://id16900.s24.wh1.su/api/collections/get/todos?token=${
-      process.env.COCKPIT_API_KEY
-    }`,
+    `http://id16900.s24.wh1.su/api/collections/get/todos?token=${COCKPIT_API_KEY}`,
     {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         filter: getFilter(filter)
-        // limit: 10,
-        // skip: 5,
-        // sort: { _created: -1 },
-        // populate: 1 // resolve linked collection items
       })
     }
   )
@@ -37,47 +31,19 @@ export const fetchTodos = filter =>
       }))
     );
 
-export const addTodo = text => {
-  const newTodo = {
-    text,
-    completed: false
-  };
-
-  return fetch(
-    `http://id16900.s24.wh1.su/api/collections/save/todos?token=${
-      process.env.COCKPIT_API_KEY
-    }`,
-    {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data: newTodo
-      })
-    }
-  )
-    .then(res => res.json())
-    .then(entry => console.log(entry));
-};
-
-export const toggleTodo = todo => {
-  // here we should get todo by id, not pass whole todo
-  console.log(todo);
-
-  return fetch(
-    `http://id16900.s24.wh1.su/api/collections/save/todos?token=${
-      process.env.COCKPIT_API_KEY
-    }`,
+export const addTodo = text =>
+  fetch(
+    `http://id16900.s24.wh1.su/api/collections/save/todos?token=${COCKPIT_API_KEY}`,
     {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         data: {
-          ...todo,
-          completed: !todo.completed
+          text,
+          completed: false
         }
       })
     }
   )
     .then(res => res.json())
-    .then(entry => console.log(entry));
-};
+    .then(entry => entry);
