@@ -9,16 +9,11 @@ const byId = (state = {}, action) => {
         nextState[todo.id] = todo;
       });
       return nextState;
-    // case "TOGGLE_TODO":
-    // case "ADD_TODO":
-    //   const nextTodo = {
-    //     ...action.response,
-    //     id: action.response._id
-    //   };
-    //   return {
-    //     ...state,
-    //     [action.response._id]: nextTodo
-    //   };
+    case "ADD_TODO_SUCCESS":
+      return {
+        ...state,
+        [action.response._id]: action.response
+      };
     // case "REMOVE_TODO":
     //   return omit(state, action.id);
     default:

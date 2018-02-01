@@ -12,6 +12,13 @@ const getFilter = filter => {
   }
 };
 
+const fixId = todo => {
+  return {
+    ...todo,
+    id: todo._id
+  };
+};
+
 export const fetchTodos = filter =>
   fetch(
     `http://id16900.s24.wh1.su/api/collections/get/todos?token=${COCKPIT_API_KEY}`,
@@ -24,12 +31,7 @@ export const fetchTodos = filter =>
     }
   )
     .then(res => res.json())
-    .then(res =>
-      res.entries.map(todo => ({
-        ...todo,
-        id: todo._id
-      }))
-    );
+    .then(res => res.entries.map(todo => fixId(todo)));
 
 export const addTodo = text =>
   fetch(
@@ -46,4 +48,4 @@ export const addTodo = text =>
     }
   )
     .then(res => res.json())
-    .then(entry => entry);
+    .then(todo => fixId(todo));
