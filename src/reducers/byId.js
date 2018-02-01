@@ -1,5 +1,3 @@
-// import omit from "lodash/omit";
-
 // lookup table with todos
 const byId = (state = {}, action) => {
   if (action.response) {
@@ -13,5 +11,5 @@ const byId = (state = {}, action) => {
 
 export default byId;
 
-// here state corresponds to byId state
+// here state corresponds to byId state e.g. lookup table
 export const getTodo = (state, id) => state[id];
