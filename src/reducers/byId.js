@@ -2,13 +2,23 @@
 
 // lookup table with todos
 const byId = (state = {}, action) => {
-  if (action.response) {
-    return {
-      ...state,
-      ...action.response.entities.todos // here todos corresponds to 'todos' string in actions/schema.js
-    };
+  switch (action.type) {
+    case "FETCH_TODOS_SUCCESS":
+      const nextState = { ...state };
+      action.response.forEach(todo => {
+        nextState[todo.id] = todo;
+      });
+      return nextState;
+    case "ADD_TODO_SUCCESS":
+      return {
+        ...state,
+        [action.response._id]: action.response
+      };
+    // case "REMOVE_TODO":
+    //   return omit(state, action.id);
+    default:
+      return state;
   }
-  return state;
 };
 
 export default byId;

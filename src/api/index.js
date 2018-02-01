@@ -12,8 +12,6 @@ const getFilter = filter => {
   }
 };
 
-// patch to remove Cockpit inner _id with natural id, used in todoapp.
-// maybe reworked later replacing all id to _id
 const fixId = todo => {
   return {
     ...todo,
