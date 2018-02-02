@@ -70,3 +70,19 @@ export const toggleTodo = (id, state) => {
     .then(res => res.json())
     .then(todo => fixId(todo));
 };
+
+export const removeTodo = id =>
+  fetch(
+    `http://id16900.s24.wh1.su/api/collections/remove/todos?token=${COCKPIT_API_KEY}`,
+    {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filter: {
+          _id: id
+        }
+      })
+    }
+  )
+    .then(res => res.json())
+    .then(todo => fixId(todo));

@@ -20,6 +20,9 @@ const createList = filter => {
           : state;
       case "TOGGLE_TODO_SUCCESS":
         return handleToggle(state, action);
+      case "REMOVE_TODO_SUCCESS":
+        const index = state.indexOf(action.id);
+        return [...state.slice(0, index), ...state.slice(index + 1)];
       default:
         return state;
     }

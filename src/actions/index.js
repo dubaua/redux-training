@@ -47,7 +47,18 @@ export const toggleTodo = id => (dispatch, getState) =>
     });
   });
 
-export const removeTodo = id => ({
-  type: "REMOVE_TODO",
-  id
-});
+export const removeTodo = id => dispatch =>
+  api.removeTodo(id).then(response => {
+    if (response.success) {
+      dispatch({
+        type: "REMOVE_TODO_SUCCESS",
+        response: normalize(response, schema.todo),
+        id: id
+      });
+    } else {
+      dispatch({
+        type: "REMOVE_TODO_FAILURE",
+        id: id
+      });
+    }
+  });
